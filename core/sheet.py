@@ -20,7 +20,18 @@ class SheetStore:
         import gspread
         info = json.loads(creds_json)
         gc = gspread.service_account_from_dict(info)
-        self.sh = gc.open_by_key(sheet_id)
+        sheet_id = sheet_id.strip()
+        if "/d/" in sheet_id:          # full URL pasted instead of just the ID
+            sheet_id = sheet_id.split("/d/")[1].split("/")[0]
+        try:
+            self.sh = gc.open_by_key(sheet_id)
+        except Exception as e:
+            raise SystemExit(
+                f"\nCan't open the Google Sheet (ID {sheet_id[:6]}…).\n"
+                f"Share the sheet with {info.get('client_email')} as Editor.\n"
+                "If you can't share it outside your college account, make a copy from your "
+                "personal Gmail, share that copy instead, and update the SHEET_ID secret.\n"
+                f"(Google said: {str(e)[:120]})") from None
         self.jobs = self._tab("Jobs", COLUMNS)
         self.companies = self._tab("Companies", COMPANY_HEADERS)
         self.health = self._tab("Health", HEALTH_HEADERS)
