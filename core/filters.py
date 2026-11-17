@@ -55,6 +55,31 @@ def job_type(job: Job) -> str:
     return "Full-time (Entry)"
 
 
+def posted_date(text: str):
+    """Best-effort posting date from ISO dates or phrases like '3 days ago'. None if unknown."""
+    from datetime import date, datetime, timedelta
+    if not text:
+        return None
+    t = str(text).strip().lower()
+    m = re.match(r"(\d{4}-\d{2}-\d{2})", t)
+    if m:
+        try:
+            return datetime.strptime(m.group(1), "%Y-%m-%d").date()
+        except ValueError:
+            return None
+    today = date.today()
+    if any(w in t for w in ("just now", "today", "hour", "minute", "few")):
+        return today
+    if "yesterday" in t:
+        return today - timedelta(days=1)
+    m = re.search(r"(\d+|a|an)\+?\s*(day|week|month|year)s?\s*ago", t)
+    if m:
+        n = 1 if m.group(1) in ("a", "an") else int(m.group(1))
+        days = {"day": 1, "week": 7, "month": 30, "year": 365}[m.group(2)] * n
+        return today - timedelta(days=days)
+    return None
+
+
 def location_ok(location: str, cfg: dict) -> bool:
     if not location or not location.strip():
         return True
@@ -75,6 +100,13 @@ def evaluate(job: Job, cfg: dict) -> tuple[bool, str]:
         return False, "not a target role"
     if not location_ok(job.location, cfg):
         return False, "location"
+
+    max_age = cfg.get("max_age_days")
+    if max_age:
+        from datetime import date
+        d = posted_date(job.posted_at)
+        if d is not None and (date.today() - d).days > max_age:
+            return False, f"posted more than {max_age} days ago"
 
     jt = job_type(job)
     exp_text = f"{job.experience} {job.description}"

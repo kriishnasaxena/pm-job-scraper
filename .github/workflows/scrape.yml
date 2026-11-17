@@ -41,7 +41,7 @@ jobs:
         env:
           SHEET_ID: ${{ secrets.SHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
-        run: python -u run.py --group "${{ github.event.inputs.group || 'fast' }}"
+        run: python -u run.py --group "${{ github.event.inputs.group || 'fast' }}" ${{ github.event_name == 'workflow_dispatch' && '--backfill' || '' }}
       - name: Save Scrapling memory
         if: always() && hashFiles('state/**') != ''
         uses: actions/cache/save@v4

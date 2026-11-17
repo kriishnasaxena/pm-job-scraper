@@ -83,6 +83,9 @@ exclude_titles:
 # Drop jobs whose JD asks for more than this many years (minimum of the range).
 max_min_years: 2
 
+# Only keep jobs posted within this many days (jobs with no date are kept).
+max_age_days: 7
+
 # Locations kept. Empty/unknown locations are kept too.
 allowed_locations:
   - india
@@ -122,7 +125,7 @@ sources:
     sites: [naukri, indeed, linkedin]   # LinkedIn last: slowest + most likely to rate-limit
     max_minutes: 12            # stop starting new searches after this long
     location: India
-    hours_old: 3              # look back a bit more than the run interval
+    hours_old: 3              # hourly runs look back 3h; manual runs look back max_age_days
     results_per_term: 25
     linkedin_fetch_description: true
     search_terms:

@@ -102,10 +102,10 @@ def test_internshala_parsing(monkeypatch, tmp_path):
 def test_ats_parsers(monkeypatch):
     import sources.ats_apis as ats
     gh = {"jobs": [{"title": "Product Intern", "absolute_url": "https://boards.greenhouse.io/acme/jobs/1",
-                    "location": {"name": "Bengaluru"}, "content": "&lt;p&gt;Hi&lt;/p&gt;", "updated_at": "2026-11-10T00:00:00Z"}]}
+                    "location": {"name": "Bengaluru"}, "content": "&lt;p&gt;Hi&lt;/p&gt;", "updated_at": __import__("datetime").date.today().isoformat() + "T00:00:00Z"}]}
     lever = [{"text": "Growth Analyst", "applyUrl": "https://jobs.lever.co/foo/2/apply",
               "categories": {"location": "Mumbai", "commitment": "Full-time"},
-              "descriptionPlain": "0-1 years", "lists": [], "createdAt": 1763000000000}]
+              "descriptionPlain": "0-1 years", "lists": [], "createdAt": int(__import__("time").time() * 1000)}]
 
     def fake_get(url):
         if "greenhouse" in url and "/acme/" in url:
@@ -134,3 +134,15 @@ def test_row_shape():
     row = j.to_row("id1", "dk")
     assert len(row) == len(COLUMNS) and row[COLUMNS.index("Status")] == "New"
     assert row[COLUMNS.index("Full JD")] == "Hello"
+
+
+def test_max_age():
+    from datetime import date, timedelta
+    old = (date.today() - timedelta(days=12)).isoformat()
+    new = (date.today() - timedelta(days=3)).isoformat()
+    assert not keep(J("Product Intern", posted_at=old))
+    assert keep(J("Product Intern", posted_at=new))
+    assert keep(J("Product Intern", posted_at=""))              # unknown date kept
+    assert not keep(J("Product Intern", posted_at="Posted 2 weeks ago"))
+    assert keep(J("Product Intern", posted_at="Posted 4 days ago"))
+    assert keep(J("Product Intern", posted_at="Few hours ago"))

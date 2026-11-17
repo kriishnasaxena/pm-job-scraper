@@ -34,7 +34,7 @@ def fetch(cfg, ctx):
                 search_term=term,
                 location=sc.get("location", "India"),
                 results_wanted=sc.get("results_per_term", 25),
-                hours_old=sc.get("hours_old", 3),
+                hours_old=(cfg.get("max_age_days", 7) * 24) if ctx.get("backfill") else sc.get("hours_old", 3),
                 country_indeed="India",
                 description_format="markdown",
                 verbose=0,

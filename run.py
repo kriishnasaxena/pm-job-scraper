@@ -42,6 +42,8 @@ def main():
     ap.add_argument("--group", default="fast", choices=["fast", "browser", "all"])
     ap.add_argument("--only", help="run just one source by name")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--backfill", action="store_true",
+                    help="look back max_age_days on LinkedIn/Naukri/Indeed instead of a few hours")
     ap.add_argument("--config", default="config.yaml")
     args = ap.parse_args()
 
@@ -71,7 +73,7 @@ def main():
             continue
 
         mod = importlib.import_module(mod_path)
-        ctx = {"store": store}
+        ctx = {"store": store, "backfill": args.backfill}
         t0 = time.time()
         fetched = kept = new = 0
         rows = []

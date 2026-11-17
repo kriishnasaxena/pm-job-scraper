@@ -55,8 +55,11 @@ def fetch(cfg, ctx):
             title = first_text(card, TITLE_SEL)
             company = first_text(card, COMPANY_SEL) or _company_from_url(durl)
             location = first_text(card, LOCATION_SEL)
+            posted = first_text(card, [".status-inactive", ".status-success", ".status-info",
+                                       ".posted_by_container", "[class*='status']"])
             jobs.append(Job(company=company, title=title, url=durl, source="Internshala",
-                            location=location, job_type_hint="fulltime" if is_job else "internship"))
+                            location=location, posted_at=posted,
+                            job_type_hint="fulltime" if is_job else "internship"))
             found_here += 1
         # Fallback if card parsing found nothing: use detail links directly.
         if found_here == 0:
