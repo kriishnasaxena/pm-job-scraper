@@ -1,0 +1,155 @@
+# ---------------------------------------------------------------
+# PM Job Scraper config. Edit this file to change what gets scraped.
+# ---------------------------------------------------------------
+
+# Roles we want, grouped by the Category column in the sheet.
+# Matching is case-insensitive and checks the job title only.
+categories:
+  Product:
+    - product intern
+    - product management intern
+    - product manager intern
+    - pm intern
+    - apm
+    - associate product manager
+    - associate product
+    - product analyst
+    - product associate
+    - product operations
+    - product ops
+    - junior product manager
+    - product management trainee
+    - product trainee
+    - product manager            # kept only if experience filter passes
+  Growth:
+    - growth intern
+    - growth analyst
+    - growth associate
+    - growth marketing
+    - growth operations
+    - growth ops
+    - growth & strategy
+    - growth and strategy
+    - growth hacker
+    - growth executive
+  Adjacent:
+    - founder's office
+    - founders office
+    - founder’s office
+    - chief of staff intern
+    - strategy & operations
+    - strategy and operations
+    - strategy intern
+    - business analyst
+
+# Titles containing any of these are dropped (seniority).
+exclude_seniority:
+  - senior
+  - sr.
+  - sr
+  - lead
+  - principal
+  - staff
+  - director
+  - head of
+  - vp
+  - vice president
+  - group product manager
+  - gpm
+  - manager ii
+  - manager iii
+  - product manager 2
+  - product manager ii
+
+# Titles containing any of these are dropped (sales-heavy "growth" roles etc).
+exclude_titles:
+  - inside sales
+  - field sales
+  - sales executive
+  - business development executive
+  - bde
+  - telecaller
+  - tele caller
+  - telesales
+  - relationship manager
+  - collection
+  - customer support
+  - teacher
+  - tutor
+  - engineer
+  - developer
+  - designer
+
+# Drop jobs whose JD asks for more than this many years (minimum of the range).
+max_min_years: 2
+
+# Locations kept. Empty/unknown locations are kept too.
+allowed_locations:
+  - india
+  - remote
+  - anywhere
+  - bengaluru
+  - bangalore
+  - mumbai
+  - navi mumbai
+  - pune
+  - hyderabad
+  - secunderabad
+  - chennai
+  - delhi
+  - new delhi
+  - ncr
+  - gurugram
+  - gurgaon
+  - noida
+  - kolkata
+  - ahmedabad
+  - jaipur
+  - chandigarh
+  - kochi
+  - indore
+  - coimbatore
+  - work from home
+
+# ---------------- Sources ----------------
+sources:
+  ats_apis:
+    enabled: true
+    group: fast
+  jobspy:
+    enabled: true
+    group: fast
+    sites: [linkedin, naukri, indeed]
+    location: India
+    hours_old: 3              # look back a bit more than the run interval
+    results_per_term: 25
+    linkedin_fetch_description: true
+    search_terms:
+      - product intern
+      - product management intern
+      - associate product manager
+      - product analyst
+      - growth intern
+      - growth analyst
+      - founder's office
+      - product manager fresher
+  internshala:
+    enabled: true
+    group: fast
+    max_detail_pages: 25      # JD pages fetched per run (only for new jobs)
+    urls:
+      - https://internshala.com/internships/product-management-internship/
+      - https://internshala.com/internships/business-analytics-internship/
+      - https://internshala.com/internships/growth-hacking-internship/
+      - https://internshala.com/jobs/product-management-jobs/
+      - https://internshala.com/fresher-jobs/
+  yc:
+    enabled: true
+    group: fast
+    max_detail_pages: 15
+    urls:
+      - https://www.ycombinator.com/jobs/role/product-manager
+      - https://www.ycombinator.com/jobs/role/operations
+
+# Polite delay between requests to the same site (seconds)
+request_delay: 1.5
