@@ -119,7 +119,8 @@ sources:
   jobspy:
     enabled: true
     group: fast
-    sites: [linkedin, naukri, indeed]
+    sites: [naukri, indeed, linkedin]   # LinkedIn last: slowest + most likely to rate-limit
+    max_minutes: 12            # stop starting new searches after this long
     location: India
     hours_old: 3              # look back a bit more than the run interval
     results_per_term: 25

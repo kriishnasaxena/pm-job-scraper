@@ -61,7 +61,6 @@ def main():
 
     seen_ids, seen_dups = store.seen()
     run_at = datetime.now(IST).strftime("%Y-%m-%d %H:%M")
-    health, all_rows = [], []
     total_new = 0
 
     for name, mod_path in SOURCE_MODULES.items():
@@ -75,7 +74,9 @@ def main():
         ctx = {"store": store}
         t0 = time.time()
         fetched = kept = new = 0
+        rows = []
         err = ""
+        print(f"[{name}] starting…", flush=True)
         try:
             jobs = mod.fetch(cfg, ctx)
             fetched = len(jobs)
@@ -106,7 +107,7 @@ def main():
             for j, jid, dk in candidates:
                 ok, _reason = evaluate(j, cfg)
                 if ok:
-                    all_rows.append(j.to_row(jid, dk))
+                    rows.append(j.to_row(jid, dk))
                     per_company[j.company] += 1
                     new += 1
             kept = new
@@ -123,15 +124,17 @@ def main():
 
         warn = "; ".join(ctx.get("warnings", [])[:5])
         msg = err or (f"warnings: {warn}"[:500] if warn else "")
-        health.append([run_at, name, fetched, kept, new, msg])
+        # Save straight away, so a slow source later on can't lose this work
+        try:
+            store.add_jobs(rows)
+            store.log_health([[run_at, name, fetched, kept, new, msg]])
+        except Exception as e:
+            print(f"[{name}] couldn't write to sheet: {e}", flush=True)
         total_new += new
         print(f"[{name}] fetched={fetched} new={new} {('ERR ' + err) if err else ''} "
-              f"({time.time() - t0:.0f}s)")
+              f"({time.time() - t0:.0f}s)", flush=True)
 
-    # newest first: sort this batch by source order then as found
-    store.add_jobs(all_rows)
-    store.log_health(health)
-    print(f"Done. {total_new} new jobs added.")
+    print(f"Done. {total_new} new jobs added.", flush=True)
 
 
 if __name__ == "__main__":

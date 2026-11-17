@@ -22,8 +22,13 @@ def fetch(cfg, ctx):
 
     sc = cfg["sources"]["jobspy"]
     jobs, errors = [], []
+    deadline = time.time() + 60 * sc.get("max_minutes", 10)
     for site in sc["sites"]:
         for term in sc["search_terms"]:
+            if time.time() > deadline:
+                errors.append(f"time budget hit before {site} '{term}' (raise max_minutes in config)")
+                break
+            print(f"  jobspy {site}: {term}", flush=True)
             kwargs = dict(
                 site_name=[site],
                 search_term=term,
@@ -44,6 +49,7 @@ def fetch(cfg, ctx):
                 if "429" in str(e):
                     break
                 continue
+            print(f"    -> {len(df)} results", flush=True)
             for _, r in df.iterrows():
                 r = r.to_dict()
                 url = _val(r, "job_url_direct") or _val(r, "job_url")

@@ -15,7 +15,7 @@ UA = {"User-Agent": "Mozilla/5.0 (pm-job-scraper; personal job search)"}
 
 
 def _get(url):
-    r = requests.get(url, headers=UA, timeout=25)
+    r = requests.get(url, headers=UA, timeout=10)
     if r.status_code == 404:
         return None
     r.raise_for_status()
