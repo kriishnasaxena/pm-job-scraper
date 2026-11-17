@@ -15,7 +15,7 @@ UA = {"User-Agent": "Mozilla/5.0 (pm-job-scraper; personal job search)"}
 
 
 def _get(url):
-    r = requests.get(url, headers=UA, timeout=10)
+    r = requests.get(url, headers=UA, timeout=(5, 10))
     if r.status_code == 404:
         return None
     r.raise_for_status()
@@ -71,35 +71,48 @@ def _ashby(company, slug):
 ATS = {"greenhouse": _greenhouse, "lever": _lever, "ashby": _ashby}
 
 
+def _check_company(c):
+    """Returns (update_dict, jobs, errors) for one company."""
+    if c["ats"] == "not-found":
+        return None, [], []
+    tried = [c["ats"]] if c["ats"] in ATS else list(ATS)
+    errors = []
+    for name in tried:
+        try:
+            res = ATS[name](c["company"], c["slug"])
+        except Exception as e:  # network / bad JSON: report, keep going
+            errors.append(f"{c['company']}/{name}: {e.__class__.__name__}")
+            res = None
+        if res is not None:
+            return ({"row": c["row"], "ats": name, "status": f"ok ({len(res)} open roles)", "matching": ""},
+                    res, errors)
+    if c["ats"] == "auto":
+        return {"row": c["row"], "ats": "not-found", "status": "slug not found on Greenhouse/Lever/Ashby"}, [], errors
+    return {"row": c["row"], "ats": c["ats"], "status": "error / not found"}, [], errors
+
+
 def fetch(cfg, ctx):
-    store = ctx["store"]
-    companies = store.read_companies()
+    from concurrent.futures import ThreadPoolExecutor, as_completed, TimeoutError as FTimeout
+
+    sc = cfg["sources"].get("ats_apis", {})
+    budget = 60 * sc.get("max_minutes", 5)
+    companies = ctx["store"].read_companies()
+    print(f"  checking {len(companies)} companies", flush=True)
     jobs, updates, errors = [], [], []
-    for c in companies:
-        if c["ats"] == "not-found":
-            continue
-        tried = [c["ats"]] if c["ats"] in ATS else list(ATS)
-        found_ats, found = None, None
-        for name in tried:
-            try:
-                res = ATS[name](c["company"], c["slug"])
-            except Exception as e:  # network / bad JSON: report, keep going
-                errors.append(f"{c['company']}/{name}: {e.__class__.__name__}")
-                res = None
-            if res is not None:
-                found_ats, found = name, res
-                break
-            time.sleep(0.3)
-        if found_ats is None:
-            if c["ats"] == "auto":
-                updates.append({"row": c["row"], "ats": "not-found", "status": "slug not found on Greenhouse/Lever/Ashby"})
-            else:
-                updates.append({"row": c["row"], "ats": c["ats"], "status": "error / not found"})
-            continue
-        jobs.extend(found)
-        updates.append({"row": c["row"], "ats": found_ats, "status": f"ok ({len(found)} open roles)",
-                        "matching": ""})
-        c["_jobs"] = found
+    pool = ThreadPoolExecutor(max_workers=sc.get("workers", 12))
+    futures = {pool.submit(_check_company, c): c for c in companies}
+    try:
+        for fut in as_completed(futures, timeout=budget):
+            c = futures[fut]
+            upd, res, errs = fut.result()
+            errors += errs
+            if upd:
+                updates.append(upd)
+                print(f"  {c['company']}: {upd['ats']} {upd['status']}", flush=True)
+            jobs.extend(res)
+    except FTimeout:
+        errors.append(f"time budget ({budget // 60} min) hit; unfinished companies retried next run")
+    pool.shutdown(wait=False, cancel_futures=True)
     ctx["company_updates"] = updates
     if errors:
         ctx.setdefault("warnings", []).extend(errors[:10])

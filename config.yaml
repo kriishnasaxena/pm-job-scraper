@@ -119,6 +119,8 @@ sources:
   ats_apis:
     enabled: true
     group: fast
+    workers: 12               # companies checked in parallel
+    max_minutes: 5
   jobspy:
     enabled: true
     group: fast
