@@ -20,9 +20,12 @@ class SheetStore:
         import gspread
         info = json.loads(creds_json)
         gc = gspread.service_account_from_dict(info)
-        sheet_id = sheet_id.strip()
-        if "/d/" in sheet_id:          # full URL pasted instead of just the ID
-            sheet_id = sheet_id.split("/d/")[1].split("/")[0]
+        import re
+        raw = sheet_id
+        # Accept a bare ID, a full URL, or an ID with "/edit..." stuck on the end
+        m = re.search(r"/d/([A-Za-z0-9_-]{20,})", raw) or re.search(r"([A-Za-z0-9_-]{25,})", raw)
+        sheet_id = m.group(1) if m else raw.strip()
+        print(f"Using sheet id {sheet_id[:6]}…{sheet_id[-3:]} (len {len(sheet_id)}; secret len {len(raw)})")
         try:
             self.sh = gc.open_by_key(sheet_id)
         except Exception as e:
