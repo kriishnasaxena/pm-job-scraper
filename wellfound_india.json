@@ -1,0 +1,18 @@
+{
+ "url": "https://wellfound.com/role/l/product-manager/india",
+ "status": 200,
+ "final_url": "https://wellfound.com/role/l/product-manager/india",
+ "title": "Product Manager Jobs in India - 2027 | Wellfound",
+ "calls": [
+  {
+   "url": "https://api.rudderstack.com/sourceConfig/?p=npm&v=3.31.2&build=modern&writeKey=3EN2r7HA1oyaeMQ1an3Yg77Jf1g&lockIntegrationsVersion=true&lockPluginsVersion=true",
+   "status": 200,
+   "body": "{\"source\":{\"id\":\"3EN2r2XL2lXSsMENukQCfOpQwvG\",\"name\":\"Core frontend production\",\"writeKey\":\"3EN2r7HA1oyaeMQ1an3Yg77Jf1g\",\"config\":{\"statsCollection\":{\"errors\":{\"enabled\":false},\"metrics\":{\"enabled\":false}}},\"enabled\":true,\"workspaceId\":\"3Dzq1hsFQMXvX6ThKN3RlksZUWj\",\"destinations\":[{\"id\":\"3EN3gdecSaBYjQfkevRM35VyJYb\",\"name\":\"Google Analytics 4\",\"enabled\":true,\"config\":{\"debugView\":false,\"measurementId\":\"G-705F94181H\",\"connectionMode\":\"device\",\"capturePageView\":\"rs\",\"whitelistedEvents\":[{\"eventName\":\"\"}],\"blacklistedEvents\":[{\"eventName\":\"\"}],\"useNativeSDKToSend\":true,\"eventFilteringOption\":\"disable\",\"extendPageViewParams\":false,\"piiPropertiesToIgnore\":[{\"piiProperty\":\"email\"},{\"piiProperty\":\"name\"},{\"piiProperty\":\"first_name\"},{\"piiProperty\":\"last_name\"},{\"piiProperty\":\"profile_url\"},{\"piiProperty\":\"recruiter_account_owner\"},{\"piiProperty\":\"current_company\"},{\"piiProperty\":\"primary_location\"},{\"piiProperty\":\"candidate_location_tags\"},{\"piiProperty\":\"candidate_interested_locations\"},{\"piiProperty\":\"candidate_desired_salary\"}],\"overrideClientAndSessionId\":false,\"consentManagement\":[],\"sdkBaseUrl\":\"https://www.googletagmanager.com\",\"serverContainerUrl\":\"\"},\"destinationDefinitionId\":\"1mQ0yXGAQM08MTdVxws7ENIPjYS\",\"destinationDefinition\":{\"name\":\"GA4\",\"displayName\":\"Google Analytics 4 (GA4)\"},\"updatedAt\":\"2026-11-12T10:13:57.465Z\",\"shouldApplyDeviceModeTransformation\":false,\"propagateEventsUntransformedOnError\":false,\"version\":1},{\"id\":\"3EQ0UKNRdPXDm4hJ7WkmuhiCijV\",\"name\":\"LinkedIn Insight Tag\",\"enabled\":true,\"config\":{\"partnerId\":\"6527716\",\"blacklistedEvents\":[],\"whitelistedEvents\":[],\"eventFilteringOption\":\"disable\",\"consentManagement\":[{\"provider\":\"oneTrust\",\"consents\":[]}]},\"destinationDefinitionId\":\"1uOqxp4MWjkYMA9DUOKXSdeUL4R\",\"destinationDefinition\":{\"name\":\"LINKEDIN_INSIGHT_TAG\",\"displayName\":\"Linkedin Insight Tag\"},\"updatedAt\":\"2026-05-29T22:58:21.396Z\",\"shouldApplyDeviceModeTransformation\":false,\"propagateEventsUntransformedOnError\":false,\"version\":1}],\"updatedAt\":\"2026-05-30T00:36:20.733Z\",\"dataplanes\":{}},\"updatedAt\":\"2026-11-12T10:13:57.745Z\",\"consentManagementMetadata\":{\"providers\":[{\"provider\":\"oneTrust\",\"resolutionStrategy\":\"and\"},{\"provider\":\"ketch\",\"resolutionStrategy\":\"or\"},{\"provider\":\"iubenda\",\"resolutionStrategy\":\"or\"}]}}"
+  },
+  {
+   "url": "https://accounts.google.com/gsi/status?client_id=226439589000-46u1nnlaf8lt4fuku2pc3mfqj59sh0u4.apps.googleusercontent.com&cas=3pIbUedNpa3t%2F02iq7T6%2Fx3R4V%2FMxRTaIXEIOTwgto0&bs=66ABVI2h2jf%2B2JO97saWCxHsln%2FBzb0eptwSMEvpKok",
+   "status": 200,
+   "body": ")]}'\n[[\"QARV5dxUHHD8Xvuvv9ix5CKs2hF47PuMNfEYPUPU8U0\"],null,0,0,1,90,120,null,0]"
+  }
+ ]
+}
