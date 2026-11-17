@@ -2,7 +2,8 @@ name: Scrape jobs
 
 on:
   schedule:
-    - cron: "7 * * * *"
+    - cron: "7 * * * *"          # every hour at :07 UTC - fast sources
+    - cron: "37 */4 * * *"       # every 4 hours at :37 UTC - browser sources (Wellfound)
   workflow_dispatch:
     inputs:
       group:
@@ -23,6 +24,8 @@ jobs:
   scrape:
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    env:
+      GROUP: ${{ github.event.inputs.group || (github.event.schedule == '37 */4 * * *' && 'browser' || 'fast') }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -31,6 +34,17 @@ jobs:
           cache: pip
       - name: Install dependencies
         run: pip install -r requirements.txt
+      - name: Cache browser
+        if: env.GROUP != 'fast'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ hashFiles('requirements.txt') }}
+
+      - name: Install browser (Scrapling)
+        if: env.GROUP != 'fast'
+        run: scrapling install
+
       - name: Prepare state folder
         run: mkdir -p state
 
@@ -45,7 +59,7 @@ jobs:
         env:
           SHEET_ID: ${{ secrets.SHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
-        run: python -u run.py --group "${{ github.event.inputs.group || 'fast' }}" ${{ github.event_name == 'workflow_dispatch' && '--backfill' || '' }} ${{ github.event.inputs.prune == 'true' && '--prune' || '' }}
+        run: python -u run.py --group "$GROUP" ${{ github.event_name == 'workflow_dispatch' && '--backfill' || '' }} ${{ github.event.inputs.prune == 'true' && '--prune' || '' }}
       - name: Save Scrapling memory
         if: always() && hashFiles('state/**') != ''
         uses: actions/cache/save@v4

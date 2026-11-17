@@ -52,7 +52,7 @@ def min_years_required(text: str) -> int | None:
 
 
 def job_type(job: Job) -> str:
-    trusted_hint = job.source in ("Internshala", "Lever", "Ashby") and _INTERN_RE.search(job.job_type_hint or "")
+    trusted_hint = job.source in ("Internshala", "Lever", "Ashby", "Unstop") and _INTERN_RE.search(job.job_type_hint or "")
     is_intern = bool(_INTERN_RE.search(job.title or "")) or bool(trusted_hint)
     if is_intern and _PPO_RE.search(f"{job.title} {job.description}"):
         return "Intern + PPO"

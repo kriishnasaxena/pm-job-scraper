@@ -158,3 +158,51 @@ def test_naukri_style_experience_and_type():
     assert keep(j) and j.job_type == "Intern"
     j = J("Product Management"); j.source = "Internshala"; j.job_type_hint = "internship"
     assert keep(j) and j.job_type == "Intern"
+
+
+FIX = os.path.join(os.path.dirname(__file__), "fixtures")
+
+
+def test_cutshort_parse_real_page():
+    from sources.cutshort import parse
+    jobs = parse(open(os.path.join(FIX, "cutshort.html")).read())
+    assert len(jobs) == 3
+    j = jobs[0]
+    assert j.title == "Associate Product manager" and j.company == "RoaDo"
+    assert j.url.startswith("https://cutshort.io/job/") and j.posted_at == "2026-11-06"
+    assert j.experience == "1-10 yrs" and "Bengaluru" in j.location
+
+
+def test_wellfound_parse_real_page():
+    from sources.wellfound import parse
+    jobs = parse(open(os.path.join(FIX, "wellfound.html")).read())
+    assert len(jobs) == 4
+    j = [x for x in jobs if x.url.startswith("https://wellfound.com/jobs/5035144")][0]
+    assert j.title == "Product Manager" and j.company == "8th Element Digital"
+    assert j.experience == "3+ yrs" and j.location == "Hyderabad" and j.posted_at.startswith("2026-")
+    assert not keep(j)          # needs 3+ years -> filtered out
+
+
+def test_unstop_parse(monkeypatch):
+    import sources.unstop as us
+    from datetime import date
+    today = date.today().isoformat()
+    item = {"title": "Product Management Intern", "seo_url": "https://unstop.com/internships/pm-intern-acme-1",
+            "organisation": {"name": "Acme"}, "details": "<p>0-1 years</p>", "region": "offline",
+            "approved_date": f"{today} 11:45:55 GMT+0530",
+            "jobDetail": {"locations": ["Bengaluru"], "min_experience": 0, "max_experience": 1, "timing": "full_time"}}
+
+    class R:
+        def __init__(s, items): s.items = items
+        def raise_for_status(s): pass
+        def json(s): return {"data": {"data": s.items}}
+    calls = []
+    def fake_get(url, params=None, **k):
+        calls.append(params)
+        return R([item] if params["page"] == 1 else [])
+    monkeypatch.setattr(us.requests, "get", fake_get)
+    cfg = dict(CFG); cfg["sources"] = {"unstop": {"kinds": ["internships"], "max_pages": 3}}
+    jobs = us.fetch(cfg, {})
+    assert len(jobs) == 1 and jobs[0].company == "Acme" and jobs[0].posted_at == today
+    assert jobs[0].experience == "0-1 yrs" and keep(jobs[0]) and jobs[0].job_type == "Intern"
+    assert len(calls) == 2      # stopped after the empty page

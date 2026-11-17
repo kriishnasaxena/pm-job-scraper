@@ -26,6 +26,10 @@ SOURCE_MODULES = {
     "jobspy": "sources.jobspy_boards",
     "internshala": "sources.internshala",
     "yc": "sources.yc",
+    "unstop": "sources.unstop",
+    "instahyre": "sources.instahyre",
+    "cutshort": "sources.cutshort",
+    "wellfound": "sources.wellfound",
 }
 
 

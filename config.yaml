@@ -161,5 +161,32 @@ sources:
       - https://www.ycombinator.com/jobs/role/product-manager
       - https://www.ycombinator.com/jobs/role/operations
 
+  unstop:
+    enabled: true
+    group: fast
+    kinds: [internships, jobs]
+    max_pages: 8              # 18 per page, newest first; stops early past max_age_days
+  instahyre:
+    enabled: true
+    group: fast
+    job_functions: [11, 34]   # 11 = Product Management, 34 = General Management / Strategy
+    max_pages: 3              # 50 per page
+  cutshort:
+    enabled: true
+    group: fast
+    urls:
+      - https://cutshort.io/jobs/product-manager-jobs
+      - https://cutshort.io/jobs/product-management-jobs
+      - https://cutshort.io/jobs/business-analyst-jobs
+      - https://cutshort.io/jobs/growth-marketing-jobs
+  wellfound:
+    enabled: true
+    group: browser            # needs Scrapling's stealth browser
+    urls:
+      - https://wellfound.com/role/l/product-manager/india
+      - https://wellfound.com/role/r/product-manager
+      - https://wellfound.com/role/l/product-analyst/india
+      - https://wellfound.com/role/l/growth-marketing-manager/india
+
 # Polite delay between requests to the same site (seconds)
 request_delay: 1.5

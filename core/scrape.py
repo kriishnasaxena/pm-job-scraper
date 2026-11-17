@@ -70,3 +70,41 @@ def page_text(page: Selector, selectors: list[str]) -> str:
                 return txt
     body = page.css("body")
     return body[0].get_all_text(separator="\n", strip=True) if body else ""
+
+
+def next_data(html: str):
+    """The JSON a Next.js site embeds in <script id="__NEXT_DATA__">, or None."""
+    import json
+    import re
+    m = re.search(r'<script id="__NEXT_DATA__" type="application/json"[^>]*>(.*?)</script>', html or "", re.S)
+    if not m:
+        return None
+    try:
+        return json.loads(m.group(1))
+    except ValueError:
+        return None
+
+
+def fetch_html(url: str, cfg: dict, need_marker: str = "", browser_first: bool = False) -> str:
+    """Get page HTML with Scrapling. Tries the fast HTTP Fetcher, then Scrapling's
+    stealth browser (StealthyFetcher) if blocked or if `need_marker` is missing."""
+    delay = cfg.get("request_delay", 1.5)
+    tries = ["browser", "http"] if browser_first else ["http", "browser"]
+    last_err = None
+    for how in tries:
+        try:
+            _polite(url, delay)
+            if how == "http":
+                resp = Fetcher.get(url, stealthy_headers=True, timeout=30, retries=1)
+            else:
+                from scrapling.fetchers import StealthyFetcher
+                resp = StealthyFetcher.fetch(url, headless=True, network_idle=True, timeout=60000,
+                                             disable_resources=True)
+            body = resp.body
+            html = body.decode("utf-8", "ignore") if isinstance(body, (bytes, bytearray)) else str(body)
+            if resp.status < 400 and (not need_marker or need_marker in html):
+                return html
+            last_err = RuntimeError(f"{how}: HTTP {resp.status}" + ("" if need_marker in html else f", no {need_marker}"))
+        except Exception as e:
+            last_err = e
+    raise last_err or RuntimeError("fetch failed")
