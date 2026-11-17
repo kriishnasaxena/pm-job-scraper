@@ -138,12 +138,14 @@ def test_row_shape():
 
 def test_max_age():
     from datetime import date, timedelta
-    old = (date.today() - timedelta(days=12)).isoformat()
+    old = (date.today() - timedelta(days=20)).isoformat()
     new = (date.today() - timedelta(days=3)).isoformat()
     assert not keep(J("Product Intern", posted_at=old))
     assert keep(J("Product Intern", posted_at=new))
     assert keep(J("Product Intern", posted_at=""))              # unknown date kept
-    assert not keep(J("Product Intern", posted_at="Posted 2 weeks ago"))
+    assert not keep(J("Product Intern", posted_at="Posted 3 weeks ago"))
+    assert keep(J("Product Intern", posted_at="Posted 2 weeks ago"))
+    assert keep(J("Product Intern", posted_at=(date.today() - timedelta(days=12)).isoformat()))
     assert keep(J("Product Intern", posted_at="Posted 4 days ago"))
     assert keep(J("Product Intern", posted_at="Few hours ago"))
 

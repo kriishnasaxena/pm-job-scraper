@@ -87,7 +87,7 @@ exclude_titles:
 max_min_years: 2
 
 # Only keep jobs posted within this many days (jobs with no date are kept).
-max_age_days: 7
+max_age_days: 14
 
 # Locations kept. Empty/unknown locations are kept too.
 allowed_locations:
