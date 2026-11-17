@@ -1,0 +1,46 @@
+name: Scrape jobs
+
+on:
+  schedule:
+    - cron: "7 * * * *"
+  workflow_dispatch:
+    inputs:
+      group:
+        description: "Which sources (fast / browser / all)"
+        default: "all"
+        type: choice
+        options: [fast, browser, all]
+
+concurrency:
+  group: scrape
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Restore Scrapling memory
+        uses: actions/cache/restore@v4
+        with:
+          path: state
+          key: scrapling-state-${{ github.run_id }}
+          restore-keys: scrapling-state-
+      - name: Run scraper
+        env:
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: python run.py --group "${{ github.event.inputs.group || 'fast' }}"
+      - name: Save Scrapling memory
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: state
+          key: scrapling-state-${{ github.run_id }}
