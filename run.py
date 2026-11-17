@@ -42,6 +42,8 @@ def main():
     ap.add_argument("--group", default="fast", choices=["fast", "browser", "all"])
     ap.add_argument("--only", help="run just one source by name")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--prune", action="store_true",
+                    help="re-check rows still marked New against the current filters and delete failures")
     ap.add_argument("--backfill", action="store_true",
                     help="look back max_age_days on LinkedIn/Naukri/Indeed instead of a few hours")
     ap.add_argument("--config", default="config.yaml")
@@ -60,6 +62,22 @@ def main():
         if not sheet_id or not creds:
             sys.exit("Missing SHEET_ID or GOOGLE_SERVICE_ACCOUNT_JSON (or use --dry-run).")
         store = SheetStore(sheet_id, creds)
+
+    if args.prune and hasattr(store, "prune"):
+        from core.models import Job
+
+        def _keep(row):
+            j = Job(company=row.get("Company", ""), title=row.get("Role", ""), url=row.get("Apply link", ""),
+                    source=row.get("Source", ""), location=row.get("Location", ""),
+                    description=row.get("Full JD", ""), posted_at=row.get("Posted on", ""),
+                    experience=row.get("Exp", ""))
+            if not j.experience:   # Naukri URLs carry experience: ...-3-to-8-years-...
+                import re
+                m = re.search(r"-(\d{1,2})-to-(\d{1,2})-years", j.url)
+                if m:
+                    j.experience = f"{m.group(1)}-{m.group(2)} Yrs"
+            return title_prefilter(j, cfg) and evaluate(j, cfg)[0]
+        print(f"Pruned {store.prune(_keep)} rows that no longer pass the filters.", flush=True)
 
     seen_ids, seen_dups = store.seen()
     run_at = datetime.now(IST).strftime("%Y-%m-%d %H:%M")

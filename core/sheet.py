@@ -70,6 +70,26 @@ class SheetStore:
                          "strict": False, "showCustomUi": True},
             }}]})
 
+    def prune(self, keep_fn) -> int:
+        """Delete rows still marked 'New' that keep_fn(row_dict) rejects. Returns count removed."""
+        values = self.jobs.get_all_values()
+        if len(values) < 2:
+            return 0
+        header = values[0]
+        bad = []
+        for i, r in enumerate(values[1:], start=2):
+            row = dict(zip(header, r + [""] * (len(header) - len(r))))
+            if row.get("Status", "New") in ("", "New") and not keep_fn(row):
+                bad.append(i)
+        # delete bottom-up in contiguous blocks so row numbers stay valid
+        reqs = []
+        for i in sorted(bad, reverse=True):
+            reqs.append({"deleteDimension": {"range": {"sheetId": self.jobs.id, "dimension": "ROWS",
+                                                        "startIndex": i - 1, "endIndex": i}}})
+        for k in range(0, len(reqs), 100):
+            self.sh.batch_update({"requests": reqs[k:k + 100]})
+        return len(bad)
+
     # ---------- companies ----------
     def read_companies(self) -> list[dict]:
         out = []

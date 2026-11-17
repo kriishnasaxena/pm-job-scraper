@@ -28,6 +28,12 @@ def categorize(title: str, cfg: dict) -> str:
     return ""
 
 
+def years_from_field(exp: str) -> int | None:
+    """Experience fields like '3-8 Yrs', '0-1 years', '2+ years' (no context needed)."""
+    m = re.search(r"(\d{1,2})\s*(?:\+|-|–|to)?\s*(\d{1,2})?\s*\+?\s*(?:years?|yrs?)", exp or "", re.I)
+    return int(m.group(1)) if m else None
+
+
 def min_years_required(text: str) -> int | None:
     """Smallest 'N years' requirement mentioned near experience wording."""
     if not text:
@@ -46,8 +52,8 @@ def min_years_required(text: str) -> int | None:
 
 
 def job_type(job: Job) -> str:
-    blob = f"{job.title} {job.job_type_hint}"
-    is_intern = bool(_INTERN_RE.search(blob))
+    trusted_hint = job.source in ("Internshala", "Lever", "Ashby") and _INTERN_RE.search(job.job_type_hint or "")
+    is_intern = bool(_INTERN_RE.search(job.title or "")) or bool(trusted_hint)
     if is_intern and _PPO_RE.search(f"{job.title} {job.description}"):
         return "Intern + PPO"
     if is_intern:
@@ -110,7 +116,9 @@ def evaluate(job: Job, cfg: dict) -> tuple[bool, str]:
 
     jt = job_type(job)
     exp_text = f"{job.experience} {job.description}"
-    yrs = min_years_required(exp_text)
+    yrs = years_from_field(job.experience)
+    if yrs is None:
+        yrs = min_years_required(job.description)
     if yrs is not None and yrs > cfg.get("max_min_years", 2):
         return False, f"needs {yrs}+ yrs"
 

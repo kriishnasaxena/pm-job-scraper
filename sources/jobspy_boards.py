@@ -1,4 +1,5 @@
 """LinkedIn, Naukri and Indeed via the open-source JobSpy library (no login used)."""
+import re
 import time
 
 from core.models import Job
@@ -39,6 +40,8 @@ def fetch(cfg, ctx):
                 description_format="markdown",
                 verbose=0,
             )
+            if site == "naukri":
+                kwargs["fetch_description"] = sc.get("naukri_fetch_description", True)
             if site == "linkedin":
                 kwargs["linkedin_fetch_description"] = sc.get("linkedin_fetch_description", True)
             try:
@@ -53,6 +56,11 @@ def fetch(cfg, ctx):
             for _, r in df.iterrows():
                 r = r.to_dict()
                 url = _val(r, "job_url_direct") or _val(r, "job_url")
+                exp = _val(r, "experience_range")
+                if not exp:   # Naukri URLs carry it: ...-0-to-2-years-...
+                    m = re.search(r"-(\d{1,2})-to-(\d{1,2})-years", _val(r, "job_url"))
+                    if m:
+                        exp = f"{m.group(1)}-{m.group(2)} Yrs"
                 jobs.append(Job(
                     company=_val(r, "company"),
                     title=_val(r, "title"),
@@ -61,7 +69,7 @@ def fetch(cfg, ctx):
                     location=_val(r, "location"),
                     description=_val(r, "description"),
                     posted_at=_val(r, "date_posted")[:10],
-                    experience=_val(r, "experience_range"),
+                    experience=exp,
                     job_type_hint=_val(r, "job_type"),
                     extra={"listing_url": _val(r, "job_url")},
                 ))

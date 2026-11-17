@@ -21,6 +21,7 @@ categories:
     - product management trainee
     - product trainee
     - product manager            # kept only if experience filter passes
+    - product management         # Internshala titles are often just this
   Growth:
     - growth intern
     - growth analyst
@@ -31,6 +32,8 @@ categories:
     - growth & strategy
     - growth and strategy
     - growth hacker
+    - growth hacking
+    - growth
     - growth executive
   Adjacent:
     - founder's office
@@ -146,7 +149,8 @@ sources:
     urls:
       - https://internshala.com/internships/product-management-internship/
       - https://internshala.com/internships/business-analytics-internship/
-      - https://internshala.com/internships/growth-hacking-internship/
+      - https://internshala.com/internships/keywords-growth/
+      - https://internshala.com/internships/keywords-founders-office/
       - https://internshala.com/jobs/product-management-jobs/
       - https://internshala.com/fresher-jobs/
   yc:

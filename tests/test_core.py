@@ -146,3 +146,15 @@ def test_max_age():
     assert not keep(J("Product Intern", posted_at="Posted 2 weeks ago"))
     assert keep(J("Product Intern", posted_at="Posted 4 days ago"))
     assert keep(J("Product Intern", posted_at="Few hours ago"))
+
+
+def test_naukri_style_experience_and_type():
+    j = J("Product Manager (PM + Scrum Master)", experience="7-11 Yrs", job_type_hint="internship")
+    j.source = "Naukri"
+    assert not keep(j)
+    j = J("Business Analyst", experience="3-8 Yrs"); j.source = "Naukri"
+    assert not keep(j)
+    j = J("Product Intern - Algo Trading", experience="0-2 Yrs"); j.source = "Naukri"
+    assert keep(j) and j.job_type == "Intern"
+    j = J("Product Management"); j.source = "Internshala"; j.job_type_hint = "internship"
+    assert keep(j) and j.job_type == "Intern"
